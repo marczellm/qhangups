@@ -36,7 +36,6 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
         self.sendButton.clicked.connect(self.on_send_clicked)
         #TODO
         # self.messagesWebView.page().mainFrame().contentsSizeChanged.connect(self.on_contents_size_changed)
-        # self.messagesWebView.page().linkClicked.connect(self.on_link_clicked)
         # self.messagesWebView.page().scrollRequested.connect(self.on_scroll_requested)
 
         self.enter_send_message = settings.value("enter_send_message", False, type=bool)
@@ -99,7 +98,6 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
     def init_messages(self):
         """Initialize QWebView with list of messages"""
         self.messagesWebView.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        # self.messagesWebView.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
         # self.messagesWebView.settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
         self.messagesWebView.page().setHtml(
             """<!doctype html>
@@ -233,10 +231,6 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
         # Use singl-shot timer, because scrolling doesn't work here (maybe some Qt bug?)
         QtCore.QTimer.singleShot(0, lambda: self.scroll_messages(position))
-
-    def on_link_clicked(self, url):
-        """Open links in external web browser (callback)"""
-        QtGui.QDesktopServices.openUrl(url)
 
     def on_text_changed(self):
         """Message text changed (callback)"""

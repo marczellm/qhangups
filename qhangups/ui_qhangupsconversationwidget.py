@@ -8,6 +8,9 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from qhangups.WebEnginePage import WebEnginePage
+
+
 class Ui_QHangupsConversationWidget(object):
     def setupUi(self, QHangupsConversationWidget):
         QHangupsConversationWidget.setObjectName("QHangupsConversationWidget")
@@ -24,6 +27,7 @@ class Ui_QHangupsConversationWidget(object):
         self.messagesWebView = QtWebEngineWidgets.QWebEngineView(self.messagesFrame)
         self.messagesWebView.setUrl(QtCore.QUrl("about:blank"))
         self.messagesWebView.setObjectName("messagesWebView")
+        self.messagesWebView.setPage(WebEnginePage(self.messagesWebView))
         self.verticalLayout.addWidget(self.messagesWebView)
         self.verticalLayout_2.addWidget(self.messagesFrame)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
