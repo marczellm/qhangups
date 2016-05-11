@@ -14,7 +14,7 @@ class Ui_QHangupsBrowser(object):
         QHangupsBrowser.resize(600, 450)
         self.verticalLayout = QtWidgets.QVBoxLayout(QHangupsBrowser)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.browserWebView = QtWebKitWidgets.QWebView(QHangupsBrowser)
+        self.browserWebView = QtWebEngineWidgets.QWebEngineView(QHangupsBrowser)
         self.browserWebView.setUrl(QtCore.QUrl("about:blank"))
         self.browserWebView.setObjectName("browserWebView")
         self.verticalLayout.addWidget(self.browserWebView)
@@ -26,4 +26,4 @@ class Ui_QHangupsBrowser(object):
         _translate = QtCore.QCoreApplication.translate
         QHangupsBrowser.setWindowTitle(_translate("QHangupsBrowser", "QHangups - Browser"))
 
-from PyQt5 import QtWebKitWidgets
+from PyQt5 import QtWebEngineWidgets

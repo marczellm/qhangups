@@ -1,6 +1,6 @@
 import datetime, asyncio
-
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets
+from xml.etree import ElementTree
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
 
 import hangups
 from hangups.ui.utils import get_conv_name
@@ -34,9 +34,10 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
         self.messageTextEdit.textChanged.connect(self.on_text_changed)
         self.sendButton.clicked.connect(self.on_send_clicked)
-        self.messagesWebView.page().mainFrame().contentsSizeChanged.connect(self.on_contents_size_changed)
-        self.messagesWebView.page().linkClicked.connect(self.on_link_clicked)
-        self.messagesWebView.page().scrollRequested.connect(self.on_scroll_requested)
+        #TODO
+        # self.messagesWebView.page().mainFrame().contentsSizeChanged.connect(self.on_contents_size_changed)
+        # self.messagesWebView.page().linkClicked.connect(self.on_link_clicked)
+        # self.messagesWebView.page().scrollRequested.connect(self.on_scroll_requested)
 
         self.enter_send_message = settings.value("enter_send_message", False, type=bool)
 
@@ -98,13 +99,13 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
     def init_messages(self):
         """Initialize QWebView with list of messages"""
         self.messagesWebView.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self.messagesWebView.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
-        #self.messagesWebView.settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
-        self.messagesWebView.setHtml(
+        # self.messagesWebView.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
+        # self.messagesWebView.settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
+        self.messagesWebView.page().setHtml(
             """<!doctype html>
             <html lang="en">
             <head>
-                <meta charset="utf-8">
+                <meta charset="utf-8"></meta>
                 <title>Messages</title>
                 <style>
                     html { font-family: sans-serif; font-size: 10pt; }
@@ -127,18 +128,27 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
         datestr = "%d.%m. %H:%M" if timestamp.astimezone(tz=None).date() < datetime.date.today() else "%H:%M"
         link = "https://plus.google.com/u/0/{}/about".format(user_id) if user_id else ""
-        message = ("""<div class="message"><b>{}{}:</b><br>\n{}<br>\n</div>\n""").format(
+        message = ("""<div class="message"><b>{}{}:</b><br/>\n{}<br/>\n</div>\n""").format(
             timestamp.astimezone(tz=None).strftime(datestr),
             """ | <a href="{}">{}</a>""".format(link, username) if username is not None else "",
             text
         )
-        doc = self.messagesWebView.page().mainFrame().documentElement()
-        div = doc.findFirst("div[id=messages]")
+        self.messagesWebView.page().toHtml(self.on_html_received(prepend, message))
 
-        if prepend:
-            div.prependInside(message)
-        else:
-            div.appendInside(message)
+    def on_html_received(self, prepend, message_str):
+        def innerfunc(html):
+            print("PARSING " + html)
+            html = html.replace('8">', '8"/>').replace('<br>', '<br/>')
+            root = ElementTree.fromstring(html)
+            message = ElementTree.fromstring(message_str)
+            div = root.find(".//div[@id='messages']")
+            if div is not None:
+                if prepend:
+                    div.insert(0, message)
+                else:
+                    div.append(message)
+                self.messagesWebView.page().setHtml(ElementTree.tostring(root, encoding='unicode'))
+        return innerfunc
 
     def is_current(self):
         """Is this conversation in current tab?"""
@@ -167,8 +177,6 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
         """Load more events for this conversation (coroutine)"""
         # Don't try to load while we're already loading.
         if not self.is_loading and not self.first_loaded:
-            print('load_events')
-
             self.is_loading = True
 
             try:
@@ -177,7 +185,7 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
                 conv_events = []
 
             if conv_events:
-                self.scroll_prev_height = self.messagesWebView.page().mainFrame().contentsSize().height()
+                self.scroll_prev_height = self.messagesWebView.page().contentsSize().height()
             else:
                 self.first_loaded = True
 
@@ -188,7 +196,7 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
     def scroll_messages(self, position=None):
         """Scroll list of messages to given position (or to the bottom if not specified)"""
-        frame = self.messagesWebView.page().mainFrame()
+        frame = self.messagesWebView.page()
 
         if position is None:
             position = frame.scrollBarMaximum(QtCore.Qt.Vertical)
@@ -197,7 +205,7 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
     def on_scroll_requested(self, dx, dy, rect_to_scroll):
         """User has scrolled in messagesWebView (callback)"""
-        frame = self.messagesWebView.page().mainFrame()
+        frame = self.messagesWebView.page()
         if frame.scrollPosition().y() == frame.scrollBarMinimum(QtCore.Qt.Vertical):
             future = asyncio.async(self.load_events())
             future.add_done_callback(lambda future: future.result())
@@ -206,8 +214,8 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
         """Size of contents in messagesWebView changed (callback)"""
         page = self.messagesWebView.page()
         viewport_height = page.viewportSize().height()
-        contents_height = page.mainFrame().contentsSize().height()
-        scroll_position = page.mainFrame().scrollPosition().y()
+        contents_height = page.contentsSize().height()
+        scroll_position = page.scrollPosition().y()
 
         # Compute max. scroll position manually, because
         # scrollBarMaximum(QtCore.Qt.Vertical) doesn't work here

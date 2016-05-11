@@ -21,7 +21,7 @@ class Ui_QHangupsConversationWidget(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.messagesFrame)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.messagesWebView = QtWebKitWidgets.QWebView(self.messagesFrame)
+        self.messagesWebView = QtWebEngineWidgets.QWebEngineView(self.messagesFrame)
         self.messagesWebView.setUrl(QtCore.QUrl("about:blank"))
         self.messagesWebView.setObjectName("messagesWebView")
         self.verticalLayout.addWidget(self.messagesWebView)
@@ -54,4 +54,4 @@ class Ui_QHangupsConversationWidget(object):
         self.sendButton.setText(_translate("QHangupsConversationWidget", "Send"))
         self.sendButton.setShortcut(_translate("QHangupsConversationWidget", "Ctrl+Return"))
 
-from PyQt5 import QtWebKitWidgets
+from PyQt5 import QtWebEngineWidgets
