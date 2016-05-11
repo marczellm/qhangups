@@ -7,7 +7,6 @@ class WebEnginePage(QWebEnginePage):
         super(WebEnginePage, self).__init__(parent)
 
     def acceptNavigationRequest(self, url, typ, ismainframe):
-        print('accepting navigation request')
         if typ == QWebEnginePage.NavigationTypeLinkClicked:
             QDesktopServices.openUrl(url)
             return False

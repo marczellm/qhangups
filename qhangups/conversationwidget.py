@@ -135,7 +135,6 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
     def on_html_received(self, prepend, message_str):
         def innerfunc(html):
-            print("PARSING " + html)
             html = html.replace('8">', '8"/>').replace('<br>', '<br/>')
             root = ElementTree.fromstring(html)
             message = ElementTree.fromstring(message_str)
