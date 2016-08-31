@@ -8,7 +8,8 @@ from qhangups.version import __version__
 install_requires = [
     "hangups>=0.3.0",
     "appdirs",
-    "Quamash"
+    "Quamash",
+    "beautifulsoup4"
 ]
 
 if sys.version_info < (3, 4):

@@ -1,6 +1,6 @@
 import datetime, asyncio
-from xml.etree import ElementTree
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
+from bs4 import BeautifulSoup
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import hangups
 from hangups.ui.utils import get_conv_name
@@ -22,6 +22,7 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
         self.is_loading = False
         self.first_loaded = False
         self.scroll_prev_height = None
+        self.html = None
 
         settings = QtCore.QSettings()
 
@@ -34,9 +35,8 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
         self.messageTextEdit.textChanged.connect(self.on_text_changed)
         self.sendButton.clicked.connect(self.on_send_clicked)
-        #TODO
-        # self.messagesWebView.page().mainFrame().contentsSizeChanged.connect(self.on_contents_size_changed)
-        # self.messagesWebView.page().scrollRequested.connect(self.on_scroll_requested)
+        self.messagesWebView.page().contentsSizeChanged.connect(self.on_contents_size_changed)
+        self.messagesWebView.page().scrollPositionChanged.connect(self.on_scroll_position_changed)
 
         self.enter_send_message = settings.value("enter_send_message", False, type=bool)
 
@@ -135,16 +135,20 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
     def on_html_received(self, prepend, message_str):
         def innerfunc(html):
-            html = html.replace('8">', '8"/>').replace('<br>', '<br/>')
-            root = ElementTree.fromstring(html)
-            message = ElementTree.fromstring(message_str)
-            div = root.find(".//div[@id='messages']")
+            if "messages" not in html:
+                return
+            if self.html is None:
+                self.html = html
+            root = BeautifulSoup(self.html, 'html.parser')
+            message = BeautifulSoup(message_str, 'html.parser')
+            div = root.find(id='messages')
             if div is not None:
                 if prepend:
                     div.insert(0, message)
                 else:
                     div.append(message)
-                self.messagesWebView.page().setHtml(ElementTree.tostring(root, encoding='unicode'))
+                self.html = str(root)
+                self.messagesWebView.page().setHtml(self.html)
         return innerfunc
 
     def is_current(self):
@@ -200,15 +204,16 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
 
         frame.setScrollPosition(QtCore.QPoint(0, position))
 
-    def on_scroll_requested(self, dx, dy, rect_to_scroll):
+    def on_scroll_position_changed(self, pos):
         """User has scrolled in messagesWebView (callback)"""
-        frame = self.messagesWebView.page()
-        if frame.scrollPosition().y() == frame.scrollBarMinimum(QtCore.Qt.Vertical):
+        if pos.y() == 0:
             future = asyncio.async(self.load_events())
-            future.add_done_callback(lambda future: future.result())
+            future.add_done_callback(lambda f: f.result())
 
     def on_contents_size_changed(self, size):
         """Size of contents in messagesWebView changed (callback)"""
+        return
+        # TODO viewportSize is not implemented in QtWebEngine yet
         page = self.messagesWebView.page()
         viewport_height = page.viewportSize().height()
         contents_height = page.contentsSize().height()
