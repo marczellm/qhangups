@@ -1,4 +1,4 @@
-import datetime, asyncio
+import datetime, asyncio, logging
 from bs4 import BeautifulSoup
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -7,6 +7,8 @@ from hangups.ui.utils import get_conv_name
 
 from qhangups.utils import text_to_segments, message_to_html
 from qhangups.ui_qhangupsconversationwidget import Ui_QHangupsConversationWidget
+
+logger = logging.getLogger(__name__)
 
 
 class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidget):
@@ -106,14 +108,18 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
                 <meta charset="utf-8"></meta>
                 <title>Messages</title>
                 <style>
-                    html { font-family: sans-serif; font-size: 10pt; }
-                    div.message { margin-bottom: 1em; }
+                    html {{ font-family: sans-serif; font-size: 10pt; color: {0}; }}
+                    a:link {{ font-family: sans-serif; font-size: 10pt; color: {1}; }}
+                    div.message {{ margin-bottom: 1em; }}
                 </style>
             </head>
             <body>
                 <div id="messages"></div>
             </body>
-            </html>"""
+            </html>""".format(
+                self.messagesWebView.palette().text().color().name(),
+                self.messagesWebView.palette().link().color().name()
+            )
         )
 
     def add_message(self, timestamp, text, username=None, user_id=None, message_id=None, prepend=False):
@@ -178,6 +184,8 @@ class QHangupsConversationWidget(QtWidgets.QWidget, Ui_QHangupsConversationWidge
         """Load more events for this conversation (coroutine)"""
         # Don't try to load while we're already loading.
         if not self.is_loading and not self.first_loaded:
+            logger.debug('Loading more conversation events')
+
             self.is_loading = True
 
             try:

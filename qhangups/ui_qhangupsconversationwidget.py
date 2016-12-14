@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qhangups/qhangupsconversationwidget.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.7
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -14,10 +14,19 @@ from qhangups.WebEnginePage import WebEnginePage
 class Ui_QHangupsConversationWidget(object):
     def setupUi(self, QHangupsConversationWidget):
         QHangupsConversationWidget.setObjectName("QHangupsConversationWidget")
-        QHangupsConversationWidget.resize(500, 350)
+        QHangupsConversationWidget.resize(600, 400)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(QHangupsConversationWidget)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.messagesFrame = QtWidgets.QFrame(QHangupsConversationWidget)
+        self.splitter = QtWidgets.QSplitter(QHangupsConversationWidget)
+        self.splitter.setOrientation(QtCore.Qt.Vertical)
+        self.splitter.setChildrenCollapsible(False)
+        self.splitter.setObjectName("splitter")
+        self.messagesFrame = QtWidgets.QFrame(self.splitter)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(250)
+        sizePolicy.setHeightForWidth(self.messagesFrame.sizePolicy().hasHeightForWidth())
+        self.messagesFrame.setSizePolicy(sizePolicy)
         self.messagesFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.messagesFrame.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.messagesFrame.setObjectName("messagesFrame")
@@ -29,23 +38,29 @@ class Ui_QHangupsConversationWidget(object):
         self.messagesWebView.setObjectName("messagesWebView")
         self.messagesWebView.setPage(WebEnginePage(self.messagesWebView))
         self.verticalLayout.addWidget(self.messagesWebView)
-        self.verticalLayout_2.addWidget(self.messagesFrame)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.messageTextEdit = QtWidgets.QPlainTextEdit(QHangupsConversationWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.frame = QtWidgets.QFrame(self.splitter)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.messageTextEdit.sizePolicy().hasHeightForWidth())
-        self.messageTextEdit.setSizePolicy(sizePolicy)
-        self.messageTextEdit.setMaximumSize(QtCore.QSize(16777215, 60))
+        sizePolicy.setVerticalStretch(1)
+        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy)
+        self.frame.setMinimumSize(QtCore.QSize(0, 60))
+        self.frame.setObjectName("frame")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.frame)
+        self.horizontalLayout.setContentsMargins(0, -1, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.messageTextEdit = QtWidgets.QPlainTextEdit(self.frame)
         self.messageTextEdit.setObjectName("messageTextEdit")
         self.horizontalLayout.addWidget(self.messageTextEdit)
-        self.sendButton = QtWidgets.QPushButton(QHangupsConversationWidget)
-        self.sendButton.setMaximumSize(QtCore.QSize(16777215, 60))
+        self.sendButton = QtWidgets.QPushButton(self.frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.sendButton.sizePolicy().hasHeightForWidth())
+        self.sendButton.setSizePolicy(sizePolicy)
         self.sendButton.setObjectName("sendButton")
         self.horizontalLayout.addWidget(self.sendButton)
-        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.verticalLayout_2.addWidget(self.splitter)
 
         self.retranslateUi(QHangupsConversationWidget)
         QtCore.QMetaObject.connectSlotsByName(QHangupsConversationWidget)
